@@ -1,25 +1,36 @@
-import React, {useEffect, useRef} from 'react';
-import {CAPTURE_OPTIONS, useEstimatePoses, useSetMediaStream, useUserMedia} from "../Utils";
+import React, {useEffect, useState, useRef} from 'react';
+import {userMediaConfig, detectorConfig, poseDetectionModel} from "../Utils";
+import {AICamera} from "../Utils/AICamera";
+import classNames from "classnames";
 
-const Camera = () => {
-    const videoRef = useRef();
-    // const {mediaStream, isLoading} = useUserMedia(CAPTURE_OPTIONS);
-    // useSetMediaStream(videoRef, mediaStream);
-    // useEstimatePoses(videoRef, mediaStream);
+const Canvas = ({className}) => {
+    const canvasRef = useRef();
+    const {isLoading, error} = useAICamera(canvasRef);
 
-    useEffect(() => {
-        const camera = new Camera(videoRef.current, CAPTURE_OPTIONS);
-    }, [videoRef.current])
-
-    function handleCanPlay() {
-        videoRef.current.play();
-    }
-
-    if (isLoading) return <h2>Loading</h2>;
+    // if (error) return <h2>error</h2>;
+    // if (isLoading) return <h2>Loading</h2>;
 
     return (
-        <video ref={videoRef} onCanPlay={handleCanPlay} autoPlay playsInline muted/>
+        <canvas className={classNames(className)} ref={canvasRef}/>
     );
 };
 
-export default Camera;
+export default Canvas;
+
+export function useAICamera(canvasRef) {
+    const [isLoading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (canvasRef.current) {
+            const camera = new AICamera(canvasRef, userMediaConfig, poseDetectionModel, detectorConfig);
+            camera.setCallback(({isLoading, error}) => {
+                setLoading(isLoading);
+                setError(error);
+            });
+            camera.initCamera();
+        }
+    }, [canvasRef.current])
+
+    return {isLoading, error}
+}

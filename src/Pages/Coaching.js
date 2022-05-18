@@ -1,9 +1,9 @@
 import React from 'react';
-import Camera from "../Components/Camera";
+import Canvas from "../Components/Canvas";
 
 const Coaching = () => {
     return (
-        <Camera/>
+        <Canvas/>
     );
 };
 

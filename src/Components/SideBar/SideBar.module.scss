@@ -1,0 +1,30 @@
+.SideBarList {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 94px 0;
+  height: calc(100% - 2 * 94px);
+}
+
+.SideBarItem {
+  margin-top: 18px;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+
+  &:hover .SideBarItemImg {
+    background-color: rgba(210, 210, 210, 0.3);
+  }
+}
+
+.SideBarItemImg {
+  display: block;
+  object-fit: contain;
+  font-size: 32px;
+  text-align: center;
+  color: #f4f4f4;
+  padding: 0.5em;
+  transition: .3s background-color;
+}

@@ -1,0 +1,16 @@
+.Inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.Canvas {
+  margin: auto;
+  border-radius: 15px;
+  overflow: hidden;
+  height: 100%;
+  object-fit: cover;
+}

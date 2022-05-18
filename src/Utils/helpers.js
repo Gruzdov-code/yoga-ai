@@ -16,7 +16,7 @@ export function cleanMediaStream(mediaStream) {
 }
 
 
-export function useUserMedia(requestedMedia, videoRef) {
+export function useUserMedia(requestedMedia) {
     const mediaStream = useRef(null);
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -39,7 +39,10 @@ export function useUserMedia(requestedMedia, videoRef) {
 
 export function useSetMediaStream(videoRef, mediaStream) {
     useEffect(() => {
-        if (videoRef.current)
-            videoRef.current.srcObject = mediaStream;
+        const videoEl = videoRef.current;
+        if (!videoEl) return;
+        videoEl.srcObject = mediaStream;
+        videoEl.addEventListener('loadedmetadata', () => {
+        })
     }, [mediaStream, videoRef.current]);
 }
