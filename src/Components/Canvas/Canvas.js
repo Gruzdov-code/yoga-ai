@@ -1,17 +1,18 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {userMediaConfig, detectorConfig, poseDetectionModel} from "../Utils";
-import {AICamera} from "../Utils/AICamera";
+import {userMediaConfig, detectorConfig, poseDetectionModel} from "../../Utils";
+import {AICamera} from "../../Utils/AICamera";
 import classNames from "classnames";
+import style from "./Canvas.module.scss";
 
 const Canvas = ({className}) => {
     const canvasRef = useRef();
     const {isLoading, error} = useAICamera(canvasRef);
 
-    // if (error) return <h2>error</h2>;
-    // if (isLoading) return <h2>Loading</h2>;
-
     return (
-        <canvas className={classNames(className)} ref={canvasRef}/>
+        <div className={classNames(className, style.Inner)}>
+            {isLoading && <i className={classNames(style.Loader)}/>}
+            <canvas className={classNames(style.Canvas)} ref={canvasRef}/>
+        </div>
     );
 };
 
