@@ -1,5 +1,3 @@
-@use 'src/UIKit/scss/global' as *;
-
 .StatInner {
   border-radius: 15px;
   overflow: hidden;
@@ -26,7 +24,7 @@
 
 .StatLabel {
   position: relative;
-  font-family: $fontMain;
+  font-family: 'Poppins', sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 32px;
@@ -36,14 +34,14 @@
 
 .StatInfo {
   position: relative;
-  font-family: $fontMain;
+  font-family: 'Poppins', sans-serif;
   font-style: normal;
   font-weight: 700;
   font-size: 72px;
   line-height: 108px;
   display: flex;
   align-items: center;
-  color: #080808;
+  color: #525252;
 
   sub {
     font-weight: 500;

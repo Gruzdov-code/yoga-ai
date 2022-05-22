@@ -1,0 +1,95 @@
+.Inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+  background-color: rgb(255 234 234 / 20%);
+  color: #525252;
+  margin-bottom: 0.5em;
+
+}
+.Header{
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin: 3em 1em 1em;
+
+}
+.Label{
+font-size: 64px;
+
+}
+.Description{
+  margin: 1.5em 0;
+  line-height: 1.5;
+}
+.Content{
+display: flex;
+flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 2em;
+}
+.ExerciseList{
+  display: flex;
+  flex-direction: column;
+}
+.ExerciseItem{
+  display: flex;
+  // justify-content: flex-start;
+  align-items: center;
+  // flex-direction: row;
+}
+.Subtitle{
+  font-size: 38px;
+  font-weight: bold;
+  align-self: flex-start;
+}
+.ExerciseInfo{
+  // display: flex;
+  // flex-direction: column;
+  // margin-left: 1em;
+}
+.ExerciseImg {
+    border-radius: 15px;
+    // background-color: #F2F2F2;
+    width: 450px;
+    height: 450px;
+    // margin-bottom: 1em;
+}
+.ExerciseLabel{
+  font-size: 32px;
+  font-weight: bold;
+  margin: 1em 0;
+}
+.ExerciseText{
+ font-size: 16px;
+ line-height: 1.5;
+}
+
+.ProgramStart{
+    height: 62px;
+    background-color: #f990ad;
+    border-radius: 35px;
+    overflow: hidden;
+    color: #fff;
+    font-family: "Poppins", sans-serif;
+    font-size: 26px;
+    font-weight: bold;
+    margin:0 1em;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border: #f990ad solid 1px;
+    transition: 0.3s background-color, 0.3s color;
+    &:hover {
+
+    background-color: transparent;
+    color: #f990ad;
+  }
+}

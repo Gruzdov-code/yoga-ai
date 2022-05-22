@@ -1,4 +1,4 @@
-@use 'src/UIKit/scss/global' as *;
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@1,700&display=swap');
 
 .HeaderInner {
   display: flex;
@@ -10,8 +10,9 @@
 }
 
 .HeaderLogo {
-  font-family: $fontMain;
+  font-family: 'Comic Neue', cursive;
   font-size: 48px;
+  color: #f990ad;
 }
 
 .HeaderUser {
@@ -30,4 +31,5 @@
   font-size: 18px;
   font-weight: bold;
   margin-left: 12px;
+  color: #525252;
 }
