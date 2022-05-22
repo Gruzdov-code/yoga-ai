@@ -46,3 +46,20 @@ export function useSetMediaStream(videoRef, mediaStream) {
         })
     }, [mediaStream, videoRef.current]);
 }
+
+export function withDebounce(func, wait) {
+    let timeoutId = null;
+    let lastProps = null;
+    let lastContext = null;
+    return (...args) => {
+        lastProps = args;
+        lastContext = this;
+        const handleCallFunc = () => {
+            func.apply(lastContext, lastProps);
+            lastProps = null;
+            lastContext = null;
+        };
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(handleCallFunc, wait);
+    };
+}

@@ -1,0 +1,11 @@
+@use '../global' as *;
+
+html {
+  font-family: $fontMain;
+}
+
+:root {
+  --bg-black: #080808;
+  --bg-white: #FFFFFF;
+}
+

@@ -1,7 +1,7 @@
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import * as tf from '@tensorflow/tfjs';
 import * as params from './params';
-import {CLASS_NO, POINTS} from "./consts";
+import {POINTS} from "./consts";
 
 const COLOR_PALETTE = [
     '#ffffff', '#800000', '#469990', '#e6194b', '#42d4f4', '#fabed4', '#aaffc3',
@@ -31,17 +31,18 @@ export class AICamera {
         this.ctx.scale(-1, 1);
     }
 
-    initCamera() {
+    initCamera(classifier = null) {
         this.getMediaStream(this.userMediaConfig)
             .then(mediaStream => {
                 this.mediaStream = mediaStream;
                 this.buildVideo();
-                return Promise.all([this.loadTFDetector(), this.loadMetaData(), this.loadClassifier()]);
+                return Promise.all([this.loadTFDetector(), this.loadMetaData(), this.loadClassifier(classifier)]);
             })
             .then(([detector, _, poseClassifier]) => {
                 this.detector = detector;
                 this.loopPrediction();
                 this.poseClassifier = poseClassifier;
+                this.pose = classifier.pose;
                 this.loadingCallback?.({isLoading: false, error: null});
             })
             .catch(err => {
@@ -49,9 +50,23 @@ export class AICamera {
             })
     }
 
+    changeClassifier(classifier) {
+        this.loadingCallback?.({isLoading: true, error: null});
+        this.loadClassifier(classifier).then(poseClassifier => {
+            this.poseClassifier = poseClassifier;
+            this.pose = classifier.pose;
+            this.loadingCallback?.({isLoading: false, error: null});
+        }).catch(err => {
+            this.loadingCallback?.({isLoading: false, error: err});
+        });
+    }
 
     setCallback(callback) {
         this.loadingCallback = callback;
+    }
+
+    setCatchPose(callback) {
+        this.catchPose = callback;
     }
 
     buildVideo() {
@@ -68,10 +83,6 @@ export class AICamera {
             this.video, 0, 0, this.video.videoWidth, this.video.videoHeight);
     }
 
-    clearCtx() {
-        this.ctx.clearRect(0, 0, this.video.videoWidth, this.video.videoHeight);
-    }
-
     loadMetaData() {
         return new Promise((resolve) => this.video
             .addEventListener('loadedmetadata', () => {
@@ -86,80 +97,87 @@ export class AICamera {
             .createDetector(this.poseDetectionModel, this.detectorConfig)
     }
 
-    loadClassifier() {
-        return tf.loadLayersModel('https://models.s3.jp-tok.cloud-object-storage.appdomain.cloud/model.json');
+    loadClassifier(classifier) {
+        if (!classifier?.link) return null;
+        return tf.loadLayersModel(classifier.link);
     }
 
-    get_center_point(landmarks, left_bodypart, right_bodypart) {
-        let left = tf.gather(landmarks, left_bodypart, 1)
-        let right = tf.gather(landmarks, right_bodypart, 1)
+    getCenterPoint(landmarks, left_bodypart, right_bodypart) {
+        const left = tf.gather(landmarks, left_bodypart, 1)
+        const right = tf.gather(landmarks, right_bodypart, 1)
         return tf.add(tf.mul(left, 0.5), tf.mul(right, 0.5))
     }
 
-    get_pose_size(landmarks, torso_size_multiplier = 2.5) {
-        let hips_center = this.get_center_point(landmarks, POINTS.LEFT_HIP, POINTS.RIGHT_HIP)
-        let shoulders_center = this.get_center_point(landmarks, POINTS.LEFT_SHOULDER, POINTS.RIGHT_SHOULDER)
-        let torso_size = tf.norm(tf.sub(shoulders_center, hips_center))
-        let pose_center_new = this.get_center_point(landmarks, POINTS.LEFT_HIP, POINTS.RIGHT_HIP)
+    getPoseSize(landmarks, torso_size_multiplier = 2.5) {
+        const hips_center = this.getCenterPoint(landmarks, POINTS.LEFT_HIP, POINTS.RIGHT_HIP)
+        const shoulders_center = this.getCenterPoint(landmarks, POINTS.LEFT_SHOULDER, POINTS.RIGHT_SHOULDER)
+        const torso_size = tf.norm(tf.sub(shoulders_center, hips_center))
+        let pose_center_new = this.getCenterPoint(landmarks, POINTS.LEFT_HIP, POINTS.RIGHT_HIP)
         pose_center_new = tf.expandDims(pose_center_new, 1)
 
         pose_center_new = tf.broadcastTo(pose_center_new,
             [1, 17, 2]
         )
-        // return: shape(17,2)
-        let d = tf.gather(tf.sub(landmarks, pose_center_new), 0, 0)
-        let max_dist = tf.max(tf.norm(d, 'euclidean', 0))
+
+        const d = tf.gather(tf.sub(landmarks, pose_center_new), 0, 0)
+        const max_dist = tf.max(tf.norm(d, 'euclidean', 0))
 
         // normalize scale
-        let pose_size = tf.maximum(tf.mul(torso_size, torso_size_multiplier), max_dist)
-        return pose_size
+        return tf.maximum(tf.mul(torso_size, torso_size_multiplier), max_dist)
     }
 
-    normalize_pose_landmarks(landmarks) {
-        let pose_center = this.get_center_point(landmarks, POINTS.LEFT_HIP, POINTS.RIGHT_HIP)
+    normalizePoseLandmarks(landmarks) {
+        let pose_center = this.getCenterPoint(landmarks, POINTS.LEFT_HIP, POINTS.RIGHT_HIP)
         pose_center = tf.expandDims(pose_center, 1)
         pose_center = tf.broadcastTo(pose_center,
             [1, 17, 2]
         )
         landmarks = tf.sub(landmarks, pose_center)
 
-        let pose_size = this.get_pose_size(landmarks)
+        const pose_size = this.getPoseSize(landmarks)
         landmarks = tf.div(landmarks, pose_size)
         return landmarks
     }
 
-    landmarks_to_embedding(landmarks) {
-        // normalize landmarks 2D
-        landmarks = this.normalize_pose_landmarks(tf.expandDims(landmarks, 0))
-        let embedding = tf.reshape(landmarks, [1, 34])
-        return embedding
+    // normalize landmarks 2D
+    landmarksToEmbedding(landmarks) {
+        landmarks = this.normalizePoseLandmarks(tf.expandDims(landmarks, 0))
+        return tf.reshape(landmarks, [1, 34])
     }
 
-    detectPose(poses) {
-        if (poses[0]) {
-            const keypointCoordinates = poses[0].keypoints.map(({x, y}) => [x, y]);
-            const processedInput = this.landmarks_to_embedding(keypointCoordinates)
+    classifyPose(processedInput) {
+        if (this.poseClassifier) {
             const classification = this.poseClassifier.predict(processedInput)
 
-            classification.array().then((data) => {
-                const classNo = CLASS_NO['Tree']
-                // console.log(data[0][classNo])
-                if (data[0][classNo] > 0.97) {
-                    console.log('DONE')
-                    this.color = 'Green';
-                } else {
-                    this.color = 'White';
-                }
-            })
+            classification.array()
+                .then(([data]) => {
+                    if (data[this.pose] > 0.97) {
+                        this.color = 'Green';
+                        this.catchPose?.(true);
+                    } else {
+                        this.color = 'White';
+                        this.catchPose?.(false);
+                    }
+                })
         }
+    }
+
+    detectPose(pose) {
+        const keypointCoordinates = pose.keypoints.map(({x, y}) => [x, y]);
+        const processedInput = this.landmarksToEmbedding(keypointCoordinates);
+        this.classifyPose(processedInput);
     }
 
     async prediction(detector, video) {
         if (!detector || !video) return;
         try {
-            const poses = await detector.estimatePoses(video);
-            this.detectPose(poses)
-            this.drawResults(poses);
+            const [pose] = await detector.estimatePoses(video);
+            if (pose && pose.score > 0.1) {
+                this.detectPose(pose)
+                this.drawResult(pose);
+            } else {
+                this.catchPose?.(false);
+            }
         } catch (error) {
             console.log(error)
             detector.dispose();
@@ -170,7 +188,7 @@ export class AICamera {
     async loopPrediction() {
         this.drawCtx();
         await this.prediction(this.detector, this.video);
-        requestAnimationFrame(this.loopPrediction.bind(this));
+        this.requestID = requestAnimationFrame(this.loopPrediction.bind(this));
     }
 
     hasMediaDevices() {
@@ -182,20 +200,13 @@ export class AICamera {
     }
 
     cleanMediaStream() {
-        if (!this.mediaStream) return;
-        return this.mediaStream.getTracks().forEach(track => {
-            track.stop();
-        });
-    }
-
-
-    /**
-     * Draw the keypoints and skeleton on the video.
-     * @param poses A list of poses to render.
-     */
-    drawResults(poses) {
-        for (const pose of poses) {
-            this.drawResult(pose);
+        const stream = this.mediaStream;
+        if (stream) {
+            window.cancelAnimationFrame(this.requestID);
+            stream.getTracks().forEach(track => {
+                stream.removeTrack(track);
+                track.stop();
+            });
         }
     }
 

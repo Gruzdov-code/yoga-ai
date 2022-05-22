@@ -1,16 +1,16 @@
 import React from 'react';
-import {BrowserRouter, Route, Routes} from "react-router-dom";
-import Main from "./Pages";
-import Coaching from "./Pages/Coaching";
+import {Route, Routes} from "react-router-dom";
+import Coaching from "../Pages/Coaching";
+import Main from "../Pages/Main";
 
 const AppRoutes = () => {
     return (
-        <BrowserRouter>
+        <>
             <Routes>
                 <Route path="/" element={<Main/>}/>
                 <Route path="/coaching" element={<Coaching/>}/>
             </Routes>
-        </BrowserRouter>
+        </>
     );
 };
 

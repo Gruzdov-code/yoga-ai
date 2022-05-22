@@ -1,51 +1,5 @@
-@import 'reset-css/sass/reset';
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,600;0,700;1,600&family=Roboto:wght@300;400;700&display=swap');
-
-*, html {
-  box-sizing: border-box;
-}
-
-h1, h2, h3, h4, h5, h6, button, span {
-  font-family: 'Poppins', sans-serif;
-}
-
-button {
-  border: none;
-  margin: 0;
-  padding: 0;
-  width: auto;
-  overflow: visible;
-
-  background: transparent;
-
-  /* inherit font & color from ancestor */
-  color: inherit;
-  font: inherit;
-
-  /* Normalize `line-height`. Cannot be changed from `normal` in Firefox 4+. */
-  line-height: normal;
-
-  /* Corrects font smoothing for webkit */
-  -webkit-font-smoothing: inherit;
-  -moz-osx-font-smoothing: inherit;
-
-  /* Corrects inability to style clickable `input` types in iOS */
-  -webkit-appearance: none;
-
-  /* Remove excess padding and border in Firefox 4+ */
-  &::-moz-focus-inner {
-    border: 0;
-    padding: 0;
-  }
-
-  cursor: pointer;
-  text-align: inherit;
-}
-
-:root {
-  --bg-black: #080808;
-  --bg-white: #FFFFFF;
-}
+@charset "UTF-8";
+@use 'src/UIKit/scss/foundation';
 
 .AppWrapper {
   width: 100vw;

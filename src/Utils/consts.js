@@ -19,37 +19,6 @@ export const detectorConfig = {
 
 export const poseDetectionModel = poseDetection.SupportedModels.MoveNet;
 
-export const poses = [
-    {
-        label: "Поза стула",
-        img: ChairPose,
-    },
-    {
-        label: "Поза кобры",
-        img: CobraPose,
-    },
-    {
-        label: "Поза собаки",
-        img: DogPose,
-    },
-    {
-        label: "Стойка на плечах",
-        img: ShoulderPose,
-    },
-    {
-        label: "Поза дерева",
-        img: TreePose,
-    },
-    {
-        label: "Поза треугольника",
-        img: TrianglePose,
-    },
-    {
-        label: "Поза война",
-        img: WarriorPose,
-    }
-];
-
 export const POINTS = {
     NOSE: 0,
     LEFT_EYE: 1,
@@ -70,13 +39,63 @@ export const POINTS = {
     RIGHT_ANKLE: 16,
 }
 
-export const CLASS_NO = {
-    Chair: 0,
-    Cobra: 1,
-    Dog: 2,
-    No_Pose: 3,
-    Shoulderstand: 4,
-    Traingle: 5,
-    Tree: 6,
-    Warrior: 7,
+export const default_model = 'https://models.s3.jp-tok.cloud-object-storage.appdomain.cloud/model.json';
+
+export const YOGA_POSES = {
+    chair: {
+        id: 0,
+        next: 'cobra',
+        label: "Поза стула",
+        img: ChairPose,
+        model: default_model,
+    },
+    cobra: {
+        id: 1,
+        next: 'dog',
+        label: "Поза кобры",
+        img: CobraPose,
+        model: default_model,
+    },
+    dog: {
+        id: 2,
+        next: 'shoulder_stand',
+        label: "Поза собаки",
+        img: DogPose,
+        model: default_model,
+    },
+    shoulder_stand: {
+        id: 4,
+        next: 'triangle',
+        label: "Стойка на плечах",
+        img: ShoulderPose,
+        model: default_model,
+    },
+    triangle: {
+        id: 5,
+        next: 'tree',
+        label: "Поза треугольника",
+        img: TrianglePose,
+        model: default_model,
+    },
+    tree: {
+        id: 6,
+        next: 'warrior',
+        label: "Поза дерева",
+        img: TreePose,
+        model: default_model,
+    },
+    warrior: {
+        id: 7,
+        next: 'chair',
+        label: "Поза война",
+        img: WarriorPose,
+        model: default_model,
+    },
+    // no_pose: {
+    //     id: 3,
+    //     label: 'нет позы',
+    //     model: default_model,
+    // },
 }
+
+export const poses = Object.entries(YOGA_POSES);
